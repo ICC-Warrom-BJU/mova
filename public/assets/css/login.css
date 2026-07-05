@@ -1,0 +1,314 @@
+/* Login Page - MOVA Enterprise Design */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+.login-page {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  display: flex;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #F6F7F5;
+  color: #151B18;
+}
+
+.login-brand {
+  flex: 1.05;
+  background: linear-gradient(165deg, #1F4B3F 0%, #173A31 55%, #122E27 100%);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 48px 56px;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-brand__map {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.18;
+  background-image:
+    linear-gradient(90deg, rgba(255,255,255,0.12) 1px, transparent 1px),
+    linear-gradient(rgba(255,255,255,0.12) 1px, transparent 1px);
+  background-size: 42px 42px;
+}
+
+.login-brand__route {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.login-brand__route svg {
+  width: 100%;
+  height: 100%;
+  opacity: 0.55;
+}
+
+.login-brand__header {
+  position: relative;
+  z-index: 2;
+}
+
+.login-brand__logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.login-brand__wordmark {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  color: #fff;
+}
+
+.login-brand__body {
+  position: relative;
+  z-index: 2;
+  max-width: 420px;
+}
+
+.login-brand__eyebrow {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.35px;
+  text-transform: uppercase;
+  color: rgba(232,241,236,0.75);
+  margin-bottom: 10px;
+}
+
+.login-brand__title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.15;
+  margin-bottom: 10px;
+}
+
+.login-brand__desc {
+  color: rgba(222,244,230,0.78);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.login-brand__stats {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  gap: 18px;
+}
+
+.login-brand__stat {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  padding: 14px 18px;
+  min-width: 110px;
+  backdrop-filter: blur(10px);
+}
+
+.login-brand__stat-value {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.login-brand__stat-label {
+  font-size: 11px;
+  color: rgba(222,244,230,0.82);
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.login-brand__footer {
+  position: relative;
+  z-index: 2;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: rgba(222,244,230,0.55);
+}
+
+.login-form-panel {
+  flex: 1;
+  background: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+}
+
+.login-form {
+  width: 100%;
+  max-width: 380px;
+}
+
+.login-form__logo {
+  display: block;
+  height: 44px;
+  width: auto;
+  margin: 0 auto 24px;
+}
+
+.login-form__eyebrow {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: #67746D;
+  margin-bottom: 10px;
+}
+
+.login-form__title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: #151B18;
+  margin-bottom: 6px;
+}
+
+.login-form__subtitle {
+  font-size: 14px;
+  color: #67746D;
+  margin-bottom: 26px;
+  line-height: 1.45;
+}
+
+.login-form__field {
+  margin-bottom: 16px;
+}
+
+.login-form__label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #151B18;
+  margin-bottom: 6px;
+}
+
+.login-form__input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #E7E9E4;
+  border-radius: 9px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #151B18;
+  background: #F6F7F5;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.login-form__input::placeholder {
+  color: #9AA39C;
+}
+
+.login-form__input:focus {
+  outline: none;
+  border-color: #1F4B3F;
+  box-shadow: 0 0 0 3px #EAF1EC;
+}
+
+.login-form__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.login-form__remember {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #151B18;
+  cursor: pointer;
+}
+
+.login-form__remember input {
+  width: 15px;
+  height: 15px;
+  accent-color: #1F4B3F;
+}
+
+.login-form__forgot {
+  font-size: 13px;
+  color: #1F4B3F;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.login-form__forgot:hover {
+  color: #2E6B58;
+  text-decoration: underline;
+}
+
+.login-form__submit {
+  width: 100%;
+  padding: 11px;
+  background: #1F4B3F;
+  color: #fff;
+  border: none;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+  box-shadow: 0 1px 2px rgba(15,77,65,0.14);
+}
+
+.login-form__submit:hover {
+  background: #2E6B58;
+  box-shadow: 0 8px 18px rgba(31,75,63,0.22);
+  transform: translateY(-1px);
+}
+
+.login-form__submit:active {
+  transform: translateY(0);
+}
+
+.login-form__footer {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #E7E9E4;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 12px;
+  color: #9AA39C;
+  text-align: center;
+  letter-spacing: 0.2px;
+}
+
+.login-form__footer a {
+  color: #67746D;
+  text-decoration: none;
+}
+
+.login-form__error {
+  background: #FEF2F2;
+  color: #7F1D1D;
+  border: 1px solid rgba(220,38,38,0.18);
+  padding: 11px 14px;
+  border-radius: 9px;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
+@media (max-width: 900px) {
+  .login-brand {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-form-panel {
+    padding: 20px;
+  }
+  .login-form__title {
+    font-size: 22px;
+  }
+}
