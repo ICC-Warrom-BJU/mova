@@ -2,6 +2,9 @@
     "name": "bju/mova",
     "description": "MOVA Fleet & Driver Management Platform",
     "type": "project",
+    "config": {
+        "process-timeout": 0
+    },
     "require": {
         "php": ">=8.0",
         "ext-pdo": "*",
