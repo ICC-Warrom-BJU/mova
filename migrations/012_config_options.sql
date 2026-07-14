@@ -33,5 +33,11 @@ INSERT INTO `mova_config_options` (`group_key`, `value`, `label`, `sort_order`) 
 ('issue_category', 'rem_kemudi', 'Rem / Kemudi', 3),
 ('issue_category', 'body', 'Body', 4),
 ('issue_category', 'ban', 'Ban', 5),
-('issue_category', 'lainnya', 'Lainnya', 6)
+('issue_category', 'lainnya', 'Lainnya', 6),
+('vehicle_type', 'pickup', 'Pickup', 1),
+('vehicle_type', 'box', 'Box', 2),
+('vehicle_type', 'wingbox', 'Wingbox', 3),
+('vehicle_type', 'fuso', 'Fuso', 4),
+('vehicle_type', 'tronton', 'Tronton', 5),
+('vehicle_type', 'trailer', 'Trailer', 6)
 ON DUPLICATE KEY UPDATE `label` = VALUES(`label`), `sort_order` = VALUES(`sort_order`);

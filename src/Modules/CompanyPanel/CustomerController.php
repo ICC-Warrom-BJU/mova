@@ -7,19 +7,35 @@ class CustomerController
         AuthMiddleware::requireAuth();
         AuthMiddleware::requireLayer('company');
 
+        $search = $_GET['q'] ?? null;
         $repo = new CustomerRepository();
-        $customers = $repo->findWithBranch();
+        $customers = $repo->findWithBranch($search);
+
+        $showInactive = !empty($_GET['show_inactive']);
+        if (!$showInactive) {
+            $customers = array_values(array_filter($customers, fn($c) => (int)($c['is_active'] ?? 1) === 1));
+        }
 
         ob_start();
         ?>
         <div class="card">
             <div class="card-header">
                 <h3>Daftar Customer</h3>
-                <a href="/customers/create" class="btn btn-primary btn-sm">+ Tambah Customer</a>
+                <div style="display:flex;gap:8px">
+                    <form method="get" action="/customers" class="form-inline" style="margin:0">
+                        <input type="text" name="q" class="form-control" placeholder="Cari kode, nama, branch, PIC..." value="<?= e($search ?? '') ?>" style="width:260px">
+                        <button type="submit" class="btn btn-outline btn-sm" style="margin-left:4px">🔍</button>
+                        <?php if ($search): ?>
+                        <a href="/customers" class="btn btn-outline btn-sm" style="margin-left:4px">✕</a>
+                        <?php endif; ?>
+                    </form>
+                    <?= inactiveToggle($showInactive) ?>
+                    <a href="/customers/create" class="btn btn-primary btn-sm">+ Tambah Customer</a>
+                </div>
             </div>
             <div class="card-body">
                 <?php if (empty($customers)): ?>
-                    <div class="empty-state"><p>Belum ada customer.</p></div>
+                    <div class="empty-state"><p><?= $search ? 'Tidak ada customer yang cocok dengan "' . e($search) . '".' : 'Belum ada customer.' ?></p></div>
                 <?php else: ?>
                 <div class="table-wrap">
                 <table>
@@ -53,6 +69,10 @@ class CustomerController
                             <td><span class="badge badge-<?= $c['is_active'] ? 'active' : 'inactive' ?>"><?= $c['is_active'] ? 'Aktif' : 'Nonaktif' ?></span></td>
                             <td>
                                 <a href="/customers/<?= $c['id'] ?>/edit" class="btn btn-warning btn-sm">Edit</a>
+                                <form method="post" action="/customers/<?= $c['id'] ?>/delete" class="form-inline" onsubmit="return confirm('Nonaktifkan customer ini?')">
+                                    <?= csrf_field() ?>
+                                    <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
+                                </form>
                             </td>
                         </tr>
                         <?php endforeach; ?>
@@ -305,5 +325,20 @@ class CustomerController
         $content = ob_get_clean();
         require __DIR__ . '/Views/layout.php';
         renderLayout('Edit Customer', $content, ['active' => 'customers']);
+    }
+
+    public function delete(int $id): void
+    {
+        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireLayer('company');
+        AuthMiddleware::validateCsrf($_POST['_csrf'] ?? '');
+
+        try {
+            (new CustomerRepository())->softDelete($id);
+            $_SESSION['_flash']['success'] = 'Customer berhasil dinonaktifkan';
+        } catch (\Throwable $e) {
+            $_SESSION['_flash']['error'] = 'Gagal menonaktifkan customer';
+        }
+        redirect('/customers');
     }
 }

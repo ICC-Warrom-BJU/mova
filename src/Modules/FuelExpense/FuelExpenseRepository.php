@@ -34,6 +34,15 @@ class FuelExpenseRepository extends BaseRepository
             $params[] = $filters['trip_id'];
         }
 
+        if (!empty($filters['date_start'])) {
+            $sql .= " AND fr.fuel_date >= ?";
+            $params[] = $filters['date_start'];
+        }
+        if (!empty($filters['date_end'])) {
+            $sql .= " AND fr.fuel_date <= ?";
+            $params[] = $filters['date_end'];
+        }
+
         $sql .= " ORDER BY fr.created_at DESC";
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
@@ -122,6 +131,15 @@ class FuelExpenseRepository extends BaseRepository
             $params[] = $filters['status'];
         }
 
+        if (!empty($filters['date_start'])) {
+            $sql .= " AND er.expense_date >= ?";
+            $params[] = $filters['date_start'];
+        }
+        if (!empty($filters['date_end'])) {
+            $sql .= " AND er.expense_date <= ?";
+            $params[] = $filters['date_end'];
+        }
+
         $sql .= " ORDER BY er.created_at DESC";
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
@@ -164,18 +182,20 @@ class FuelExpenseRepository extends BaseRepository
 
     public function approveExpenseReport(int $id, int $approverId): int
     {
-        return $this->scopedUpdate(
-            ['status' => 'approved', 'approved_by' => $approverId, 'approved_at' => date('Y-m-d H:i:s')],
-            'id = ? AND status = ?', [$id, 'pending']
-        );
+        $sql = "UPDATE mova_expense_reports SET status = 'approved', approved_by = ?, approved_at = NOW()
+                WHERE id = ? AND status = 'pending'";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$approverId, $id]);
+        return $stmt->rowCount();
     }
 
     public function rejectExpenseReport(int $id, int $approverId, string $reason): int
     {
-        return $this->scopedUpdate(
-            ['status' => 'rejected', 'approved_by' => $approverId,
-             'approved_at' => date('Y-m-d H:i:s'), 'rejection_reason' => $reason],
-            'id = ? AND status = ?', [$id, 'pending']
-        );
+        $sql = "UPDATE mova_expense_reports SET status = 'rejected', approved_by = ?,
+                approved_at = NOW(), rejection_reason = ?
+                WHERE id = ? AND status = 'pending'";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$approverId, $reason, $id]);
+        return $stmt->rowCount();
     }
 }

@@ -68,7 +68,7 @@ h1, h2, h3, h4, h5, h6 { font-weight: 600; line-height: 1.3; color: var(--text);
 
 a { color: var(--brand); }
 
-.app { display: flex; min-height: 100vh; }
+.app { display: flex; height: 100vh; overflow: hidden; }
 
 /* ------------------------------------------------------------
  * SIDEBAR (solid dark, tanpa gradient/blur)
@@ -82,6 +82,7 @@ a { color: var(--brand); }
   flex-direction: column;
   transition: transform 0.2s ease-out;
   z-index: 50;
+  overflow-y: auto;
 }
 
 .sidebar-header { padding: 18px 16px; border-bottom: 1px solid var(--sidebar-border); }
@@ -149,6 +150,45 @@ a { color: var(--brand); }
 .nav-item.is-locked { color: var(--text-muted); }
 .nav-item.is-locked .nav-icon { color: var(--text-muted); }
 .nav-item.is-locked:hover { color: var(--sidebar-item); }
+
+/* Collapsible parent nav (Master Data, dsb) */
+.nav-toggle {
+  cursor: pointer;
+  user-select: none;
+}
+.nav-toggle .chevron {
+  margin-left: auto;
+  transition: transform var(--t-fast);
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+.nav-toggle.is-open .chevron {
+  transform: rotate(180deg);
+}
+.nav-toggle.is-open,
+.nav-toggle.is-open .nav-icon {
+  color: var(--brand);
+  font-weight: 600;
+}
+.nav-toggle.is-open {
+  background: var(--brand-soft);
+  border-left-color: var(--brand);
+  border-radius: 0 var(--radius-input) var(--radius-input) 0;
+}
+
+.nav-collapse {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 220ms ease-out;
+}
+.nav-collapse.is-expanded {
+  max-height: 400px; /* cukup untuk 6 item */
+}
+
+.nav-sub-item {
+  padding-left: 42px;
+  font-size: 0.82rem;
+}
 .nav-flag {
   margin-left: auto; flex-shrink: 0;
   font-size: 0.56rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
@@ -156,9 +196,11 @@ a { color: var(--brand); }
   background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-bd);
 }
 /* Tier chip di section header */
-.nav-header .nav-tier {
+.nav-header .nav-tier,
+.nav-label .nav-tier {
   font-size: 0.54rem; font-weight: 700; letter-spacing: 0.03em;
   padding: 1px 5px; border-radius: 4px; margin-left: 6px;
+  vertical-align: middle;
 }
 .nav-tier--premium { background: var(--info-bg); color: var(--info); border: 1px solid var(--info-bd); }
 .nav-tier--enterprise { background: var(--purple-bg); color: var(--purple); border: 1px solid var(--purple-bd); }
@@ -170,6 +212,26 @@ a { color: var(--brand); }
   display: flex; align-items: center; justify-content: center; margin: 0 auto;
 }
 .ud-icon svg { width: 30px; height: 30px; }
+
+/* Checkbox "Tampilkan nonaktif" di header list */
+.header-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.inactive-toggle {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.8rem; color: var(--text-2); cursor: pointer; user-select: none; white-space: nowrap;
+}
+.inactive-toggle input { accent-color: var(--brand); width: 15px; height: 15px; cursor: pointer; }
+
+/* Status sekunder (is_active) — chip muted di samping badge status operasional */
+.status-flag {
+  margin-left: 6px;
+  font-size: 0.66rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em;
+  color: var(--text-2); background: var(--surface-2);
+  border: 1px solid var(--border); border-radius: 9999px; padding: 2px 8px;
+  vertical-align: middle;
+}
+/* Baris record nonaktif — tint halus utk scannability */
+tbody tr.row-inactive td { background: var(--surface-2); }
+tbody tr.row-inactive:hover td { background: var(--row-border); }
 
 /* Sidebar footer / user */
 .sidebar-footer {
@@ -229,7 +291,7 @@ a { color: var(--brand); }
 /* ------------------------------------------------------------
  * MAIN + TOPBAR (putih solid, border-bottom)
  * ------------------------------------------------------------ */
-.main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.main { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow-y: auto; }
 
 .topbar {
   background: var(--surface);
@@ -678,7 +740,7 @@ tbody td small { display: block; font-size: 0.75rem; color: var(--text-2); margi
 }
 
 /* ------------------------------------------------------------
- * QUICK ACCESS
+ * QUICK ACCESS — 3D buttons (white bg, shadow, raised)
  * ------------------------------------------------------------ */
 .quick-access {
   display: grid;
@@ -690,56 +752,94 @@ tbody td small { display: block; font-size: 0.75rem; color: var(--text-2); margi
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 16px;
-  border-radius: var(--radius-md);
-  font-size: 0.8125rem;
+  padding: 14px 18px;
+  border-radius: var(--radius-card);
+  font-size: 0.85rem;
   font-weight: 600;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  color: var(--color-text-primary);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
   text-decoration: none;
-  transition: all var(--transition-fast);
-  box-shadow: var(--shadow-sm);
+  border-left: 3px solid var(--brand);
+  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+  transition: box-shadow var(--t-fast), transform var(--t-fast), border-color var(--t-fast);
 }
 
 .quick-access__btn:hover {
-  background: var(--color-muted);
-  color: var(--color-primary);
-  border-color: var(--color-primary);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  border-color: var(--brand);
+  border-left-width: 3px;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.10), 0 2px 4px rgba(15, 110, 86, 0.12);
+  transform: translateY(-3px);
+}
+
+.quick-access__btn:active {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.06);
 }
 
 .quick-access__icon {
   width: 20px;
   height: 20px;
   flex-shrink: 0;
-  color: var(--color-text-secondary);
-  transition: color var(--transition-fast);
+  color: var(--brand);
+  transition: color var(--t-fast);
 }
 
 .quick-access__btn:hover .quick-access__icon {
-  color: var(--color-primary);
+  color: var(--brand-hover);
 }
 
 .quick-access__btn--primary {
-  background: var(--color-primary);
+  background: var(--brand);
   color: #fff;
-  border-color: var(--color-primary);
+  border-color: var(--brand);
+  box-shadow: 0 2px 4px rgba(15, 110, 86, 0.25), 0 1px 2px rgba(15, 110, 86, 0.15);
 }
 
 .quick-access__btn--primary:hover {
-  background: var(--color-primary-hover);
+  background: var(--brand-hover);
+  border-color: var(--brand-hover);
   color: #fff;
-  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.22);
+  box-shadow: 0 6px 14px rgba(15, 110, 86, 0.30), 0 2px 4px rgba(15, 110, 86, 0.20);
+  transform: translateY(-2px);
+}
+
+.quick-access__btn--primary:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(15, 110, 86, 0.20);
 }
 
 .quick-access__btn--primary .quick-access__icon {
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255, 255, 255, 0.90);
 }
 
 .quick-access__btn--primary:hover .quick-access__icon {
   color: #fff;
+}
+
+/* ------------------------------------------------------------
+ * DATE FILTER (inline di card-header)
+ * ------------------------------------------------------------ */
+.date-filter-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.date-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.date-filter-group label {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+.date-filter-group .form-control-sm {
+  width: 130px;
+  padding: 5px 8px;
+  font-size: 0.78rem;
 }
 
 /* ------------------------------------------------------------

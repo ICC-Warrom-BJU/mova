@@ -47,46 +47,6 @@ function renderLayout(string $title, string $content, array $data = []): void
             </div>
 
             <div class="nav-section">
-                <div class="nav-header">Master Data</div>
-                <a href="/regions" class="nav-item <?= str_starts_with($active, 'regions') ? 'active' : '' ?>" data-tooltip="Region">
-                    <span class="nav-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                    </span>
-                    <span class="nav-label">Region</span>
-                </a>
-                <a href="/branches" class="nav-item <?= str_starts_with($active, 'branches') ? 'active' : '' ?>" data-tooltip="Branch">
-                    <span class="nav-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                    </span>
-                    <span class="nav-label">Branch</span>
-                </a>
-                <a href="/customers" class="nav-item <?= str_starts_with($active, 'customers') ? 'active' : '' ?>" data-tooltip="Customer">
-                    <span class="nav-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                    </span>
-                    <span class="nav-label">Customer</span>
-                </a>
-                <a href="/vehicles" class="nav-item <?= str_starts_with($active, 'vehicles') ? 'active' : '' ?>" data-tooltip="Vehicle">
-                    <span class="nav-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h3l3 3v4h-6V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-                    </span>
-                    <span class="nav-label">Vehicle</span>
-                </a>
-                <a href="/users" class="nav-item <?= str_starts_with($active, 'users') ? 'active' : '' ?>" data-tooltip="User">
-                    <span class="nav-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20v-1a8 8 0 0 1 16 0v1"/></svg>
-                    </span>
-                    <span class="nav-label">User</span>
-                </a>
-                <a href="/config" class="nav-item <?= str_starts_with($active, 'config') ? 'active' : '' ?>" data-tooltip="Konfigurasi">
-                    <span class="nav-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-                    </span>
-                    <span class="nav-label">Konfigurasi</span>
-                </a>
-            </div>
-
-            <div class="nav-section">
                 <div class="nav-header">Operational</div>
                 <a href="/customer/requests" class="nav-item <?= str_starts_with($active, 'requests') ? 'active' : '' ?>" data-tooltip="Vehicle Request">
                     <span class="nav-icon">
@@ -128,6 +88,103 @@ function renderLayout(string $title, string $content, array $data = []): void
                     </span>
                     <span class="nav-label">Maintenance</span>
                 </a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-header">Master Data</div>
+                <?php
+                $masterActive = str_starts_with($active, 'regions')
+                    || str_starts_with($active, 'branches')
+                    || str_starts_with($active, 'customers')
+                    || str_starts_with($active, 'vehicles')
+                    || str_starts_with($active, 'users')
+                    || str_starts_with($active, 'config')
+                    || str_starts_with($active, 'permissions');
+                ?>
+                <a class="nav-item nav-toggle <?= $masterActive ? 'is-open' : '' ?>" onclick="toggleNavCollapse(this)" role="button" tabindex="0">
+                    <span class="nav-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                    </span>
+                    <span class="nav-label">Master Data</span>
+                    <span class="chevron">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                    </span>
+                </a>
+                <div class="nav-collapse <?= $masterActive ? 'is-expanded' : '' ?>">
+                    <a href="/regions" class="nav-item nav-sub-item <?= str_starts_with($active, 'regions') ? 'active' : '' ?>" data-tooltip="Region">
+                        <span class="nav-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                        </span>
+                        <span class="nav-label">Region</span>
+                    </a>
+                    <a href="/branches" class="nav-item nav-sub-item <?= str_starts_with($active, 'branches') ? 'active' : '' ?>" data-tooltip="Branch">
+                        <span class="nav-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                        </span>
+                        <span class="nav-label">Branch</span>
+                    </a>
+                    <a href="/customers" class="nav-item nav-sub-item <?= str_starts_with($active, 'customers') ? 'active' : '' ?>" data-tooltip="Customer">
+                        <span class="nav-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        </span>
+                        <span class="nav-label">Customer</span>
+                    </a>
+                    <a href="/vehicles" class="nav-item nav-sub-item <?= str_starts_with($active, 'vehicles') ? 'active' : '' ?>" data-tooltip="Vehicle">
+                        <span class="nav-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h3l3 3v4h-6V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                        </span>
+                        <span class="nav-label">Vehicle</span>
+                    </a>
+                    <a href="/users" class="nav-item nav-sub-item <?= str_starts_with($active, 'users') ? 'active' : '' ?>" data-tooltip="User">
+                        <span class="nav-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20v-1a8 8 0 0 1 16 0v1"/></svg>
+                        </span>
+                        <span class="nav-label">User</span>
+                    </a>
+                    <a href="/permissions" class="nav-item nav-sub-item <?= str_starts_with($active, 'permissions') ? 'active' : '' ?>" data-tooltip="Permission">
+                        <span class="nav-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        </span>
+                        <span class="nav-label">Permission</span>
+                    </a>
+                    <a href="/config" class="nav-item nav-sub-item <?= str_starts_with($active, 'config') ? 'active' : '' ?>" data-tooltip="Konfigurasi">
+                        <span class="nav-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                        </span>
+                        <span class="nav-label">Konfigurasi</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-header">Other Features</div>
+                <?php
+                $catalog = function_exists('moduleCatalog') ? moduleCatalog() : [];
+                $tierSections = ['premium' => 'Premium', 'enterprise' => 'Enterprise'];
+                foreach ($tierSections as $tierKey => $tierName):
+                    $items = array_filter($catalog, fn($m) => $m['tier'] === $tierKey);
+                    if (empty($items)) continue;
+                    $tierActive = !empty(array_filter($items, fn($m) => $active === $m['key']));
+                ?>
+                <a class="nav-item nav-toggle <?= $tierActive ? 'is-open' : '' ?>" onclick="toggleNavCollapse(this)" role="button" tabindex="0">
+                    <span class="nav-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>
+                    </span>
+                    <span class="nav-label"><?= e($tierName) ?> <span class="nav-tier nav-tier--<?= $tierKey ?>"><?= $tierKey === 'premium' ? 'PRO' : 'ENT' ?></span></span>
+                    <span class="chevron">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                    </span>
+                </a>
+                <div class="nav-collapse <?= $tierActive ? 'is-expanded' : '' ?>">
+                    <?php foreach ($items as $m): ?>
+                    <a href="/customer/module/<?= e($m['key']) ?>" class="nav-item nav-sub-item is-locked <?= $active === $m['key'] ? 'active' : '' ?>" data-tooltip="<?= e($m['label']) ?>">
+                        <span class="nav-icon"><?= $m['icon'] ?></span>
+                        <span class="nav-label"><?= e($m['label']) ?></span>
+                        <span class="nav-flag">Dev</span>
+                    </a>
+                    <?php endforeach; ?>
+                </div>
+                <?php endforeach; ?>
             </div>
         </nav>
 
@@ -204,6 +261,14 @@ function renderLayout(string $title, string $content, array $data = []): void
                 sidebar.classList.remove('open');
             }
         });
+    }
+
+    function toggleNavCollapse(el) {
+        el.classList.toggle('is-open');
+        const collapse = el.nextElementSibling;
+        if (collapse && collapse.classList.contains('nav-collapse')) {
+            collapse.classList.toggle('is-expanded');
+        }
     }
 </script>
 </body>

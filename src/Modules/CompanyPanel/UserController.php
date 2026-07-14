@@ -7,19 +7,35 @@ class UserController
         AuthMiddleware::requireAuth();
         AuthMiddleware::requireLayer('company');
 
+        $search = $_GET['q'] ?? null;
         $repo = new UserRepository();
-        $users = $repo->findWithRole();
+        $users = $repo->findWithRole($search);
+
+        $showInactive = !empty($_GET['show_inactive']);
+        if (!$showInactive) {
+            $users = array_values(array_filter($users, fn($u) => (int)($u['is_active'] ?? 1) === 1));
+        }
 
         ob_start();
         ?>
         <div class="card">
             <div class="card-header">
                 <h3>Daftar User</h3>
-                <a href="/users/create" class="btn btn-primary btn-sm">+ Tambah User</a>
+                <div style="display:flex;gap:8px">
+                    <form method="get" action="/users" class="form-inline" style="margin:0">
+                        <input type="text" name="q" class="form-control" placeholder="Cari nama, email, role..." value="<?= e($search ?? '') ?>" style="width:260px">
+                        <button type="submit" class="btn btn-outline btn-sm" style="margin-left:4px">🔍</button>
+                        <?php if ($search): ?>
+                        <a href="/users" class="btn btn-outline btn-sm" style="margin-left:4px">✕</a>
+                        <?php endif; ?>
+                    </form>
+                    <?= inactiveToggle($showInactive) ?>
+                    <a href="/users/create" class="btn btn-primary btn-sm">+ Tambah User</a>
+                </div>
             </div>
             <div class="card-body">
                 <?php if (empty($users)): ?>
-                    <div class="empty-state"><p>Belum ada user.</p></div>
+                    <div class="empty-state"><p><?= $search ? 'Tidak ada user yang cocok dengan "' . e($search) . '".' : 'Belum ada user.' ?></p></div>
                 <?php else: ?>
                 <div class="table-wrap">
                 <table>
@@ -284,10 +300,12 @@ class UserController
         AuthMiddleware::requireLayer('company');
         AuthMiddleware::validateCsrf($_POST['_csrf'] ?? '');
 
-        $repo = new UserRepository();
-        $repo->delete($id);
-
-        $_SESSION['_flash']['success'] = 'User berhasil dihapus';
+        try {
+            (new UserRepository())->softDelete($id);
+            $_SESSION['_flash']['success'] = 'User berhasil dinonaktifkan';
+        } catch (\Throwable $e) {
+            $_SESSION['_flash']['error'] = 'Gagal menonaktifkan user';
+        }
         redirect('/users');
     }
 }

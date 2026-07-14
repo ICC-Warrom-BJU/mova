@@ -4,7 +4,7 @@ class TripRepository extends BaseRepository
 {
     protected string $table = 'mova_trips';
 
-    public function findWithRelations(): array
+    public function findWithRelations(array $filters = []): array
     {
         $sql = "SELECT t.*,
                 v.plate_number,
@@ -15,19 +15,32 @@ class TripRepository extends BaseRepository
                 FROM mova_trips t
                 JOIN mova_vehicles v ON v.id = t.vehicle_id
                 JOIN mova_users driver ON driver.id = t.driver_id
-                JOIN mova_users inputter ON inputter.id = t.input_by";
+                JOIN mova_users inputter ON inputter.id = t.input_by
+                WHERE 1=1";
+        $params = [];
 
         if ($this->tenant->isSuperAdmin()) {
-            $stmt = $this->db->prepare($sql . " ORDER BY t.created_at DESC");
-            $stmt->execute();
+            //
         } else {
             $ids = $this->tenant->getAccessibleCustomerIds();
             if (empty($ids)) return [];
             $ph = implode(',', array_fill(0, count($ids), '?'));
-            $sql .= " WHERE t.customer_id IN ($ph) ORDER BY t.created_at DESC";
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute($ids);
+            $sql .= " AND t.customer_id IN ($ph)";
+            $params = $ids;
         }
+
+        if (!empty($filters['date_start'])) {
+            $sql .= " AND t.trip_date >= ?";
+            $params[] = $filters['date_start'];
+        }
+        if (!empty($filters['date_end'])) {
+            $sql .= " AND t.trip_date <= ?";
+            $params[] = $filters['date_end'];
+        }
+
+        $sql .= " ORDER BY t.created_at DESC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
         return $stmt->fetchAll();
     }
 

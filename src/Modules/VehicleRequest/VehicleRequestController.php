@@ -7,13 +7,20 @@ class VehicleRequestController
         AuthMiddleware::requireAuth();
         AuthMiddleware::requireLayer('customer');
         $repo = new VehicleRequestRepository();
-        $requests = $repo->findWithRelations();
+        $filters = [
+            'date_start' => $_GET['date_start'] ?? date('Y-m-d'),
+            'date_end' => $_GET['date_end'] ?? date('Y-m-d'),
+        ];
+        $requests = $repo->findWithRelations($filters);
 
         ob_start();
         ?>
         <div class="card">
             <div class="card-header">
-                <h3>Vehicle Request</h3>
+                <div style="display:flex;align-items:center;gap:12px">
+                    <h3>Vehicle Request</h3>
+                    <?php require __DIR__ . '/../CustomerPanel/Views/date_filter.php'; ?>
+                </div>
                 <a href="/customer/requests/create" class="btn btn-primary btn-sm">+ Ajukan</a>
             </div>
             <div class="card-body">

@@ -7,13 +7,20 @@ class FuelController
         AuthMiddleware::requireAuth();
         AuthMiddleware::requireLayer('customer');
         $repo = new FuelExpenseRepository();
-        $fuels = $repo->findFuelReports();
+        $filters = [
+            'date_start' => $_GET['date_start'] ?? date('Y-m-d'),
+            'date_end' => $_GET['date_end'] ?? date('Y-m-d'),
+        ];
+        $fuels = $repo->findFuelReports($filters);
 
         ob_start();
         ?>
         <div class="card">
             <div class="card-header">
-                <h3>Fuel Report</h3>
+                <div style="display:flex;align-items:center;gap:12px">
+                    <h3>Fuel Report</h3>
+                    <?php require __DIR__ . '/../CustomerPanel/Views/date_filter.php'; ?>
+                </div>
                 <a href="/customer/fuel/create" class="btn btn-primary btn-sm">+ Lapor BBM</a>
             </div>
             <div class="card-body">

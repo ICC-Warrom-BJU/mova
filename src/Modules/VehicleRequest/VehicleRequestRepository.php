@@ -4,7 +4,7 @@ class VehicleRequestRepository extends BaseRepository
 {
     protected string $table = 'mova_vehicle_requests';
 
-    public function findWithRelations(): array
+    public function findWithRelations(array $filters = []): array
     {
         $sql = "SELECT vr.*, 
                 requester.name AS requested_by_name,
@@ -13,19 +13,32 @@ class VehicleRequestRepository extends BaseRepository
                 FROM mova_vehicle_requests vr
                 JOIN mova_users requester ON requester.id = vr.requested_by
                 LEFT JOIN mova_vehicles veh ON veh.id = vr.assigned_vehicle_id
-                LEFT JOIN mova_users driver ON driver.id = vr.assigned_driver_id";
+                LEFT JOIN mova_users driver ON driver.id = vr.assigned_driver_id
+                WHERE 1=1";
+        $params = [];
 
         if ($this->tenant->isSuperAdmin()) {
-            $stmt = $this->db->prepare($sql . " ORDER BY vr.created_at DESC");
-            $stmt->execute();
+            //
         } else {
             $ids = $this->tenant->getAccessibleCustomerIds();
             if (empty($ids)) return [];
             $ph = implode(',', array_fill(0, count($ids), '?'));
-            $sql .= " WHERE vr.customer_id IN ($ph) ORDER BY vr.created_at DESC";
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute($ids);
+            $sql .= " AND vr.customer_id IN ($ph)";
+            $params = $ids;
         }
+
+        if (!empty($filters['date_start'])) {
+            $sql .= " AND vr.departure_date >= ?";
+            $params[] = $filters['date_start'];
+        }
+        if (!empty($filters['date_end'])) {
+            $sql .= " AND vr.departure_date <= ?";
+            $params[] = $filters['date_end'];
+        }
+
+        $sql .= " ORDER BY vr.created_at DESC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
         return $stmt->fetchAll();
     }
 
@@ -57,7 +70,7 @@ class VehicleRequestRepository extends BaseRepository
             'request_number' => $data['request_number'],
             'requested_by' => $data['requested_by'],
             'department' => $data['department'] ?? null,
-            'origin' => $data['origin'],
+            'origin' => $data['origin'] ?? null,
             'destination' => $data['destination'],
             'purpose' => $data['purpose'],
             'driver_option' => $data['driver_option'] ?? 'with_driver',

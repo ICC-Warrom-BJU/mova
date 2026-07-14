@@ -161,7 +161,7 @@ railway link
 
 #### 5.4 Jalankan Migration
 
-Buka terminal di folder `mova/` (project root):
+Buka terminal di folder `mova/` (project   root):
 
 ```powershell
 # Jalankan migration SQL

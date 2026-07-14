@@ -7,13 +7,20 @@ class TripController
         AuthMiddleware::requireAuth();
         AuthMiddleware::requireLayer('customer');
         $repo = new TripRepository();
-        $trips = $repo->findWithRelations();
+        $filters = [
+            'date_start' => $_GET['date_start'] ?? date('Y-m-d'),
+            'date_end' => $_GET['date_end'] ?? date('Y-m-d'),
+        ];
+        $trips = $repo->findWithRelations($filters);
 
         ob_start();
         ?>
         <div class="card">
             <div class="card-header">
-                <h3>Trip Log</h3>
+                <div style="display:flex;align-items:center;gap:12px">
+                    <h3>Trip Log</h3>
+                    <?php require __DIR__ . '/../CustomerPanel/Views/date_filter.php'; ?>
+                </div>
                 <a href="/customer/trips/create" class="btn btn-primary btn-sm">+ Input Trip</a>
             </div>
             <div class="card-body">
@@ -65,7 +72,7 @@ class TripController
 
         $db = Database::getConnection();
         if ($tenant->isSuperAdmin()) {
-            $vehicles = $db->query("SELECT v.*, c.name as customer_name FROM mova_vehicles v LEFT JOIN mova_customers c ON c.id = v.customer_id WHERE v.is_active = 1 ORDER BY c.name, v.plate_number")->fetchAll();
+            $vehicles = $db->query("SELECT v.*, c.name as customer_name, c.code as customer_code FROM mova_vehicles v LEFT JOIN mova_customers c ON c.id = v.customer_id WHERE v.is_active = 1 ORDER BY c.name, v.plate_number")->fetchAll();
             $drivers = $db->query("SELECT u.*, c.name as customer_name FROM mova_users u JOIN mova_roles r ON r.id = u.role_id LEFT JOIN mova_customers c ON c.id = u.customer_id WHERE r.name IN ('koordinator','driver') AND u.is_active = 1 ORDER BY c.name, u.name")->fetchAll();
         } else {
             $vehicles = $db->prepare("SELECT * FROM mova_vehicles WHERE customer_id = ? AND is_active = 1 ORDER BY plate_number");
@@ -111,7 +118,7 @@ class TripController
                             <select name="vehicle_id" class="form-control" required>
                                 <option value="">-- Pilih --</option>
                                 <?php foreach ($vehicles as $v): ?>
-                                <option value="<?= $v['id'] ?>"><?= isset($v['customer_name']) ? '[' . e($v['customer_name']) . '] ' : '' ?><?= e($v['plate_number']) ?> — <?= e($v['brand']) ?></option>
+                                <option value="<?= $v['id'] ?>"><?= isset($v['customer_code']) ? '[' . e($v['customer_code']) . '] ' : '' ?><?= e($v['plate_number']) ?> - <?= e($v['brand']) ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>

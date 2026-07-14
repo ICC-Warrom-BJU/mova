@@ -1,5 +1,6 @@
 <?php
 
+require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/autoload.php';
 require_once __DIR__ . '/../src/Helpers/functions.php';
 
@@ -38,9 +39,12 @@ $exactRoutes = [
         '/customers/create'   => 'CustomerController@create',
         '/vehicles'           => 'VehicleController@index',
         '/vehicles/create'    => 'VehicleController@create',
+        '/vehicles/import'    => 'VehicleController@import',
+        '/vehicles/import/template' => 'VehicleController@downloadTemplate',
         '/users'              => 'UserController@index',
         '/users/create'       => 'UserController@create',
         '/config'             => 'ConfigController@index',
+        '/permissions'        => 'PermissionController@index',
 
         '/customer/dashboard'  => 'CustomerDashboardController@index',
         '/customer/requests'   => 'VehicleRequestController@index',
@@ -64,8 +68,10 @@ $exactRoutes = [
         '/branches/create'    => 'BranchController@create',
         '/customers/create'   => 'CustomerController@create',
         '/vehicles/create'    => 'VehicleController@create',
+        '/vehicles/import'    => 'VehicleController@import',
         '/users/create'       => 'UserController@create',
         '/config'             => 'ConfigController@store',
+        '/permissions'        => 'PermissionController@update',
 
         '/customer/requests/create' => 'VehicleRequestController@create',
         '/customer/trips/create'    => 'TripController@create',
@@ -104,9 +110,15 @@ if ($action === null) {
             '#^/customer/maintenance/(\d+)/edit$#'  => ['MaintenanceController@edit', 'Maintenance'],
         ],
         'POST' => [
+            '#^/regions/(\d+)/edit$#'              => ['RegionController@edit', 'CompanyPanel'],
             '#^/regions/(\d+)/delete$#'            => ['RegionController@delete', 'CompanyPanel'],
+            '#^/branches/(\d+)/edit$#'             => ['BranchController@edit', 'CompanyPanel'],
             '#^/branches/(\d+)/delete$#'           => ['BranchController@delete', 'CompanyPanel'],
+            '#^/customers/(\d+)/edit$#'            => ['CustomerController@edit', 'CompanyPanel'],
+            '#^/customers/(\d+)/delete$#'          => ['CustomerController@delete', 'CompanyPanel'],
+            '#^/vehicles/(\d+)/edit$#'             => ['VehicleController@edit', 'CompanyPanel'],
             '#^/vehicles/(\d+)/delete$#'           => ['VehicleController@delete', 'CompanyPanel'],
+            '#^/users/(\d+)/edit$#'                => ['UserController@edit', 'CompanyPanel'],
             '#^/users/(\d+)/delete$#'              => ['UserController@delete', 'CompanyPanel'],
             '#^/config/(\d+)/toggle$#'            => ['ConfigController@toggle', 'CompanyPanel'],
 

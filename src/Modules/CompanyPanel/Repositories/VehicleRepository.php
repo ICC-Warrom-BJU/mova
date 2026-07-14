@@ -20,26 +20,38 @@ class VehicleRepository extends BaseRepository
         return $stmt->fetchAll();
     }
 
-    public function findWithCustomer(): array
+    public function findWithCustomer(?string $search = null): array
     {
         $sql = "SELECT v.*, c.name AS customer_name
                 FROM mova_vehicles v
                 JOIN mova_customers c ON c.id = v.customer_id";
 
-        if ($this->tenant->isSuperAdmin()) {
-            $stmt = $this->db->prepare($sql . " ORDER BY c.name, v.plate_number");
-            $stmt->execute();
-        } else {
+        $params = [];
+        $conditions = [];
+
+        if (!$this->tenant->isSuperAdmin()) {
             $ids = $this->tenant->getAccessibleCustomerIds();
             if (empty($ids)) {
                 return [];
             }
             $placeholders = implode(',', array_fill(0, count($ids), '?'));
-            $sql .= " WHERE v.customer_id IN ($placeholders) ORDER BY c.name, v.plate_number";
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute($ids);
+            $conditions[] = "v.customer_id IN ($placeholders)";
+            $params = $ids;
         }
 
+        if ($search !== null && $search !== '') {
+            $keyword = '%' . $search . '%';
+            $conditions[] = "(v.plate_number LIKE ? OR v.brand LIKE ? OR v.model LIKE ? OR c.name LIKE ?)";
+            $params = array_merge($params, [$keyword, $keyword, $keyword, $keyword]);
+        }
+
+        if (!empty($conditions)) {
+            $sql .= " WHERE " . implode(' AND ', $conditions);
+        }
+
+        $sql .= " ORDER BY c.name, v.plate_number";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
         return $stmt->fetchAll();
     }
 

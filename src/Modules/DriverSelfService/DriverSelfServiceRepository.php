@@ -93,6 +93,15 @@ class DriverSelfServiceRepository extends BaseRepository
             $params[] = $filters['severity'];
         }
 
+        if (!empty($filters['date_start'])) {
+            $sql .= " AND ir.created_at >= ?";
+            $params[] = $filters['date_start'];
+        }
+        if (!empty($filters['date_end'])) {
+            $sql .= " AND ir.created_at <= ?";
+            $params[] = $filters['date_end'] . ' 23:59:59';
+        }
+
         $sql .= " ORDER BY ir.created_at DESC";
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
@@ -122,11 +131,17 @@ class DriverSelfServiceRepository extends BaseRepository
 
     public function updateIssueStatus(int $id, string $status, ?string $resolvedNotes = null): int
     {
-        $data = ['status' => $status];
         if ($status === 'resolved' || $status === 'closed') {
-            $data['resolved_at'] = date('Y-m-d H:i:s');
-            $data['resolved_notes'] = $resolvedNotes;
+            $stmt = $this->db->prepare(
+                "UPDATE mova_issue_reports SET status = ?, resolved_at = NOW(), resolved_notes = ? WHERE id = ?"
+            );
+            $stmt->execute([$status, $resolvedNotes, $id]);
+        } else {
+            $stmt = $this->db->prepare(
+                "UPDATE mova_issue_reports SET status = ? WHERE id = ?"
+            );
+            $stmt->execute([$status, $id]);
         }
-        return $this->scopedUpdate($data, 'id = ?', [$id]);
+        return $stmt->rowCount();
     }
 }

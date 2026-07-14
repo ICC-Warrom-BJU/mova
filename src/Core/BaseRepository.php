@@ -28,7 +28,6 @@ abstract class BaseRepository
     {
         $offset = ($page - 1) * $perPage;
         $whereClause .= ($whereClause ? ' AND ' : '') . "1 = 1";
-        $countParams = $params;
 
         if (!$this->tenant->isSuperAdmin() && $this->hasCustomerId) {
             $ids = $this->tenant->getAccessibleCustomerIds();
@@ -41,7 +40,7 @@ abstract class BaseRepository
 
         $countSql = "SELECT COUNT(*) FROM {$this->table}" . ($whereClause ? " WHERE $whereClause" : '');
         $countStmt = $this->db->prepare($countSql);
-        $countStmt->execute($countParams);
+        $countStmt->execute($params);
         $total = (int) $countStmt->fetchColumn();
 
         $sql = "SELECT * FROM {$this->table}" . ($whereClause ? " WHERE $whereClause" : '') . " LIMIT $perPage OFFSET $offset";
@@ -107,6 +106,15 @@ abstract class BaseRepository
     public function delete(int $id): int
     {
         return $this->scopedDelete('id = ?', [$id]);
+    }
+
+    /**
+     * Soft delete: set is_active = 0 (tetap hormati scope tenant).
+     * Dipakai untuk master data agar tidak melanggar FK RESTRICT & menjaga jejak.
+     */
+    public function softDelete(int $id): int
+    {
+        return $this->scopedUpdate(['is_active' => 0], 'id = ?', [$id]);
     }
 
     protected function scopedDelete(string $whereClause = '', array $whereParams = []): int

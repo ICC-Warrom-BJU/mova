@@ -21,14 +21,22 @@ class BranchController
             $branches = !empty($branchIds) ? $repo->findByIds($branchIds) : [];
         }
 
+        $showInactive = !empty($_GET['show_inactive']);
+        if (!$showInactive) {
+            $branches = array_values(array_filter($branches, fn($b) => (int)($b['is_active'] ?? 1) === 1));
+        }
+
         ob_start();
         ?>
         <div class="card">
             <div class="card-header">
                 <h3>Daftar Branch</h3>
-                <?php if ($tenant->isSuperAdmin()): ?>
-                <a href="/branches/create" class="btn btn-primary btn-sm">+ Tambah Branch</a>
-                <?php endif; ?>
+                <div class="header-actions">
+                    <?= inactiveToggle($showInactive) ?>
+                    <?php if ($tenant->isSuperAdmin()): ?>
+                    <a href="/branches/create" class="btn btn-primary btn-sm">+ Tambah Branch</a>
+                    <?php endif; ?>
+                </div>
             </div>
             <div class="card-body">
                 <?php if (empty($branches)): ?>
@@ -238,10 +246,12 @@ class BranchController
         AuthMiddleware::requireLayer('company');
         AuthMiddleware::validateCsrf($_POST['_csrf'] ?? '');
 
-        $repo = new BranchRepository();
-        $repo->delete($id);
-
-        $_SESSION['_flash']['success'] = 'Branch berhasil dihapus';
+        try {
+            (new BranchRepository())->softDelete($id);
+            $_SESSION['_flash']['success'] = 'Branch berhasil dinonaktifkan';
+        } catch (\Throwable $e) {
+            $_SESSION['_flash']['error'] = 'Gagal menonaktifkan branch';
+        }
         redirect('/branches');
     }
 }

@@ -55,10 +55,56 @@ function generateNumber(string $prefix): string
 }
 
 /**
+ * Ambil label tampilan untuk sebuah value config (termasuk yang nonaktif),
+ * fallback ke value mentah bila tak ditemukan.
+ */
+function configLabel(string $group, ?string $value): string
+{
+    if ($value === null || $value === '') return '-';
+    static $maps = [];
+    if (!isset($maps[$group])) {
+        $maps[$group] = [];
+        try {
+            $s = Database::getConnection()->prepare("SELECT value, label FROM mova_config_options WHERE group_key = ?");
+            $s->execute([$group]);
+            foreach ($s as $r) $maps[$group][$r['value']] = $r['label'];
+        } catch (\Throwable $e) { /* ignore */ }
+    }
+    return $maps[$group][$value] ?? $value;
+}
+
+/**
+ * Tone badge (warna) untuk status operasional yang konfigurable.
+ * Heuristik berdasarkan kata kunci → success/warning/inactive/info.
+ */
+function statusTone(?string $value): string
+{
+    $v = strtolower((string)$value);
+    if (preg_match('/maintenance|service|servis|perbaikan|repair/', $v)) return 'warning';
+    if (preg_match('/not|non|inactive|nonaktif|rusak|off|stop|tidak/', $v)) return 'inactive';
+    if (preg_match('/ready|active|siap|ok|jalan|aktif/', $v)) return 'active';
+    return 'info';
+}
+
+/**
  * Katalog modul Premium & Enterprise (belum dibangun) untuk mode DEMO.
  * Ditampilkan di sidebar dengan flag tier + "Under Development", dan dipakai
  * halaman placeholder. Sumber tunggal supaya sidebar & placeholder konsisten.
  */
+/**
+ * Checkbox "Tampilkan nonaktif" untuk list master data.
+ * Menoggle query param ?show_inactive=1 (param lain seperti pencarian dipertahankan).
+ */
+function inactiveToggle(bool $show): string
+{
+    $checked = $show ? ' checked' : '';
+    // autocomplete="off": cegah browser me-restore state checkbox (form restoration)
+    // yang membuat centang tak sinkron dengan URL sebenarnya.
+    // Catatan: di inline handler, `URL` tertutup oleh document.URL (string), jadi pakai window.URL.
+    $js = "var u=new window.URL(window.location.href);this.checked?u.searchParams.set('show_inactive','1'):u.searchParams.delete('show_inactive');window.location.href=u.href;";
+    return '<label class="inactive-toggle"><input type="checkbox" autocomplete="off"' . $checked . ' onchange="' . e($js) . '"><span>Tampilkan nonaktif</span></label>';
+}
+
 function moduleCatalog(): array
 {
     return [

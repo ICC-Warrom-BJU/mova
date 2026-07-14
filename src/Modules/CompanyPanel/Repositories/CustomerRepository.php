@@ -3,34 +3,48 @@
 class CustomerRepository extends BaseRepository
 {
     protected string $table = 'mova_customers';
+    // mova_customers TIDAK punya kolom customer_id (ini tabel tenant-nya sendiri),
+    // jadi scoping BaseRepository via customer_id tidak berlaku.
+    protected bool $hasCustomerId = false;
 
     public function findActive(): array
     {
         return $this->scopedSelect('is_active = 1 ORDER BY name ASC');
     }
 
-    public function findWithBranch(): array
+    public function findWithBranch(?string $search = null): array
     {
         $sql = "SELECT c.*, b.name AS branch_name, sp.name AS plan_name
                 FROM mova_customers c
                 JOIN mova_branches b ON b.id = c.branch_id
-                JOIN mova_subscription_plans sp ON sp.id = c.subscription_plan_id
-                ORDER BY c.name";
+                JOIN mova_subscription_plans sp ON sp.id = c.subscription_plan_id";
 
-        if ($this->tenant->isSuperAdmin()) {
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute();
-        } else {
+        $params = [];
+        $conditions = [];
+
+        if (!$this->tenant->isSuperAdmin()) {
             $ids = $this->tenant->getAccessibleCustomerIds();
             if (empty($ids)) {
                 return [];
             }
             $placeholders = implode(',', array_fill(0, count($ids), '?'));
-            $sql .= " WHERE c.id IN ($placeholders)";
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute($ids);
+            $conditions[] = "c.id IN ($placeholders)";
+            $params = $ids;
         }
 
+        if ($search !== null && $search !== '') {
+            $keyword = '%' . $search . '%';
+            $conditions[] = "(c.code LIKE ? OR c.name LIKE ? OR b.name LIKE ? OR c.pic_name LIKE ?)";
+            $params = array_merge($params, [$keyword, $keyword, $keyword, $keyword]);
+        }
+
+        if (!empty($conditions)) {
+            $sql .= " WHERE " . implode(' AND ', $conditions);
+        }
+
+        $sql .= " ORDER BY c.name";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
         return $stmt->fetchAll();
     }
 

@@ -4,26 +4,38 @@ class UserRepository extends BaseRepository
 {
     protected string $table = 'mova_users';
 
-    public function findWithRole(): array
+    public function findWithRole(?string $search = null): array
     {
         $sql = "SELECT u.*, r.name AS role_name, r.layer AS role_layer
                 FROM mova_users u
                 JOIN mova_roles r ON r.id = u.role_id";
 
-        if ($this->tenant->isSuperAdmin()) {
-            $stmt = $this->db->prepare($sql . " ORDER BY u.name");
-            $stmt->execute();
-        } else {
+        $params = [];
+        $conditions = [];
+
+        if (!$this->tenant->isSuperAdmin()) {
             $ids = $this->tenant->getAccessibleCustomerIds();
             if (empty($ids)) {
                 return [];
             }
             $placeholders = implode(',', array_fill(0, count($ids), '?'));
-            $sql .= " WHERE u.customer_id IN ($placeholders) ORDER BY u.name";
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute($ids);
+            $conditions[] = "u.customer_id IN ($placeholders)";
+            $params = $ids;
         }
 
+        if ($search !== null && $search !== '') {
+            $keyword = '%' . $search . '%';
+            $conditions[] = "(u.name LIKE ? OR u.email LIKE ? OR r.name LIKE ?)";
+            $params = array_merge($params, [$keyword, $keyword, $keyword]);
+        }
+
+        if (!empty($conditions)) {
+            $sql .= " WHERE " . implode(' AND ', $conditions);
+        }
+
+        $sql .= " ORDER BY u.name";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
         return $stmt->fetchAll();
     }
 

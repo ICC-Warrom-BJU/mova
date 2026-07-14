@@ -8,15 +8,18 @@ class RegionController
         AuthMiddleware::requireLayer('company');
 
         $repo = new RegionRepository();
-        $regions = $repo->findActive();
-        $all = $repo->findAll();
+        $showInactive = !empty($_GET['show_inactive']);
+        $all = $showInactive ? $repo->findAll() : $repo->findActive();
 
         ob_start();
         ?>
         <div class="card">
             <div class="card-header">
                 <h3>Daftar Region</h3>
-                <a href="/regions/create" class="btn btn-primary btn-sm">+ Tambah Region</a>
+                <div class="header-actions">
+                    <?= inactiveToggle($showInactive) ?>
+                    <a href="/regions/create" class="btn btn-primary btn-sm">+ Tambah Region</a>
+                </div>
             </div>
             <div class="card-body">
                 <?php if (empty($all)): ?>
@@ -185,10 +188,12 @@ class RegionController
         AuthMiddleware::requireLayer('company');
         AuthMiddleware::validateCsrf($_POST['_csrf'] ?? '');
 
-        $repo = new RegionRepository();
-        $repo->delete($id);
-
-        $_SESSION['_flash']['success'] = 'Region berhasil dihapus';
+        try {
+            (new RegionRepository())->softDelete($id);
+            $_SESSION['_flash']['success'] = 'Region berhasil dinonaktifkan';
+        } catch (\Throwable $e) {
+            $_SESSION['_flash']['error'] = 'Gagal menonaktifkan region';
+        }
         redirect('/regions');
     }
 }
