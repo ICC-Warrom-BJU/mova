@@ -156,7 +156,7 @@ $existing->execute([$vehiclePlate]);
 if (!$existing->fetch()) {
     $stmt = $db->prepare(
         "INSERT INTO mova_vehicles (customer_id, plate_number, brand, model, year, color, vehicle_type, current_km, status, is_active)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active', 1)"
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'ready', 1)"
     );
     $stmt->execute([
         $customerId,

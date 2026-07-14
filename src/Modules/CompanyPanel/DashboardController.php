@@ -127,10 +127,28 @@ class DashboardController
         } else {
             $vsStmt = null;
         }
-        $vehicleStatusData = ['active' => 0, 'maintenance' => 0, 'inactive' => 0];
+        $statusCounts = [];
         if ($vsStmt) {
             foreach ($vsStmt->fetchAll() as $row) {
-                $vehicleStatusData[$row['status']] = (int)$row['cnt'];
+                $statusCounts[$row['status']] = (int)$row['cnt'];
+            }
+        }
+        // Bangun data chart dari konfigurasi vehicle_status (label + warna via statusTone).
+        $vsToneHex = ['active' => '#16A34A', 'warning' => '#D97706', 'inactive' => '#94A3B8', 'info' => '#2563EB'];
+        $vsLabels = $vsCounts = $vsColors = [];
+        $vsSeen = [];
+        foreach (configOptions('vehicle_status') as $vsOpt) {
+            $vsLabels[]  = $vsOpt['label'];
+            $vsCounts[]  = $statusCounts[$vsOpt['value']] ?? 0;
+            $vsColors[]  = $vsToneHex[statusTone($vsOpt['value'])] ?? '#2563EB';
+            $vsSeen[$vsOpt['value']] = true;
+        }
+        // Nilai status yang ada di data tapi tak terdaftar di config.
+        foreach ($statusCounts as $vsVal => $vsCnt) {
+            if (!isset($vsSeen[$vsVal])) {
+                $vsLabels[] = configLabel('vehicle_status', $vsVal);
+                $vsCounts[] = $vsCnt;
+                $vsColors[] = $vsToneHex[statusTone($vsVal)] ?? '#2563EB';
             }
         }
 
@@ -500,10 +518,10 @@ class DashboardController
             new Chart(document.getElementById('vehicleStatusChart'), {
                 type: 'doughnut',
                 data: {
-                    labels: ['Aktif', 'Maintenance', 'Tidak Aktif'],
+                    labels: <?= json_encode($vsLabels) ?>,
                     datasets: [{
-                        data: [<?= $vehicleStatusData['active'] ?>, <?= $vehicleStatusData['maintenance'] ?>, <?= $vehicleStatusData['inactive'] ?>],
-                        backgroundColor: ['#0F6E56', '#D97706', '#94A3B8'],
+                        data: <?= json_encode($vsCounts) ?>,
+                        backgroundColor: <?= json_encode($vsColors) ?>,
                         borderColor: '#FFFFFF',
                         borderWidth: 2,
                         hoverOffset: 6,

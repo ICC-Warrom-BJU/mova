@@ -155,7 +155,7 @@ foreach ($customers as $code => &$c) {
         }
         $c['vehicles'][] = ins($db,'mova_vehicles',[
             'customer_id'=>$cid,'plate_number'=>$plate,'brand'=>$brand,'model'=>$model,'year'=>mt_rand(2018,2024),
-            'color'=>pick($colors),'vehicle_type'=>$type,'current_km'=>mt_rand(20000,90000),'status'=>'active',
+            'color'=>pick($colors),'vehicle_type'=>$type,'current_km'=>mt_rand(20000,90000),'status'=>'ready',
             'stnk_expiry'=>sprintf('2026-%02d-%02d',mt_rand(7,12),mt_rand(1,28)),'kir_expiry'=>sprintf('2026-%02d-%02d',mt_rand(7,12),mt_rand(1,28)),'is_active'=>1,
         ]);
     }

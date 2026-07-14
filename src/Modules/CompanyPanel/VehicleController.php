@@ -605,7 +605,7 @@ class VehicleController
                     'color' => trim($data['color'] ?? ''),
                     'vehicle_type' => trim($data['vehicle_type'] ?? ''),
                     'current_km' => !empty(trim($data['current_km'] ?? '')) ? (int)$data['current_km'] : 0,
-                    'status' => in_array(trim($data['status'] ?? ''), ['active', 'maintenance', 'inactive']) ? trim($data['status']) : 'active',
+                    'status' => in_array(trim($data['status'] ?? ''), array_column(configOptions('vehicle_status'), 'value'), true) ? trim($data['status']) : (configOptions('vehicle_status')[0]['value'] ?? 'ready'),
                     'stnk_expiry' => !empty(trim($data['stnk_expiry'] ?? '')) ? trim($data['stnk_expiry']) : null,
                     'kir_expiry' => !empty(trim($data['kir_expiry'] ?? '')) ? trim($data['kir_expiry']) : null,
                     'is_active' => 1,
