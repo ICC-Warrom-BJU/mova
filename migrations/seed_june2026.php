@@ -139,13 +139,9 @@ foreach ($customers as $code => &$c) {
         ];
     }
 
-    // Vehicles (5/customer). DEMO01 sudah punya 'B 1234 XX'.
-    $c['vehicles'] = [];
-    if ($code === 'DEMO01') {
-        $vid = (int)$db->query("SELECT id FROM mova_vehicles WHERE plate_number='B 1234 XX'")->fetchColumn();
-        if ($vid) $c['vehicles'][] = $vid;
-    }
-    $need = 5 - count($c['vehicles']);
+    // Vehicles (5/customer) — IDEMPOTEN: muat kendaraan existing dulu, buat kekurangannya saja.
+    $c['vehicles'] = array_map('intval', $db->query("SELECT id FROM mova_vehicles WHERE customer_id=$cid ORDER BY id")->fetchAll(PDO::FETCH_COLUMN));
+    $need = max(0, 5 - count($c['vehicles']));
     for ($k = 0; $k < $need; $k++) {
         [$brand,$model,$type] = pick($brands);
         $plate = sprintf('DD %d %s', mt_rand(1000,9999), chr(mt_rand(65,90)).chr(mt_rand(65,90)));
@@ -176,7 +172,16 @@ foreach (['operation@mova.com','marketing@mova.com'] as $em) {
 /* ==================================================== 2. OPERATIONAL — JUNI 2026 */
 echo "\n-- Operational (Juni 2026) --\n";
 
-$seqReq = 1; $seqTrip = 1; $seqIss = 1;
+// Lanjutkan penomoran dari nilai maksimum yang sudah ada di DB, supaya re-run
+// parsial (sebagian customer sudah di-seed) tidak bentrok nomor unik.
+$maxSeq = function(string $table, string $col, string $prefix) use ($db): int {
+    $s = $db->prepare("SELECT COALESCE(MAX(CAST(SUBSTRING_INDEX(`$col`,'-',-1) AS UNSIGNED)),0) FROM `$table` WHERE `$col` LIKE ?");
+    $s->execute([$prefix . '%']);
+    return (int)$s->fetchColumn();
+};
+$seqReq  = $maxSeq('mova_vehicle_requests', 'request_number', 'REQ-202606-') + 1;
+$seqTrip = $maxSeq('mova_trips',            'trip_number',    'TRP-202606-') + 1;
+$seqIss  = $maxSeq('mova_issue_reports',    'report_number',  'ISS-202606-') + 1;
 $tot = ['req'=>0,'trip'=>0,'fuel'=>0,'exp'=>0,'chk'=>0,'iss'=>0,'ms'=>0,'ml'=>0,'notif'=>0];
 $odo = []; // odometer per vehicle
 
