@@ -112,6 +112,16 @@ class UserController
                 redirect('/users/create');
             }
 
+            // Kuota user per paket langganan (untuk user milik customer).
+            $targetCustomerId = !empty($_POST['customer_id']) ? (int)$_POST['customer_id'] : null;
+            if ($targetCustomerId) {
+                $max = planMaxUsers($targetCustomerId);
+                if ($max !== -1 && customerActiveUsers($targetCustomerId) >= $max) {
+                    $_SESSION['_flash']['error'] = "Kuota user tercapai (maks $max untuk paket customer ini). Nonaktifkan user lain atau upgrade paket.";
+                    redirect('/users/create');
+                }
+            }
+
             $repo->create($_POST);
 
             $passwordPlain = $_POST['password'] ?? 'auto-generated';

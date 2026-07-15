@@ -28,6 +28,19 @@ class AuthMiddleware
         }
     }
 
+    /**
+     * Batasi akses endpoint ke modul yang diizinkan paket langganan.
+     * Company layer selalu lolos. Customer di luar paket → redirect + flash.
+     */
+    public static function requireModule(string $moduleKey): void
+    {
+        $tenant = SessionMiddleware::getTenantContext();
+        if (!$tenant->hasModule($moduleKey)) {
+            $_SESSION['_flash']['error'] = 'Modul ini tidak tersedia di paket langganan Anda.';
+            redirect($tenant->getLayer() === 'company' ? '/dashboard' : '/customer/dashboard');
+        }
+    }
+
     public static function requireOwnershipOrScope(int $resourceCustomerId): void
     {
         $tenant = SessionMiddleware::getTenantContext();

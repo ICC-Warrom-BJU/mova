@@ -195,6 +195,11 @@ a { color: var(--brand); }
   padding: 1px 5px; border-radius: 4px;
   background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-bd);
 }
+/* Modul di luar paket (perlu upgrade) — ikon kunci muted, tanpa background */
+.nav-flag--lock {
+  background: transparent; border: none; padding: 0; color: var(--text-muted);
+  display: inline-flex; align-items: center;
+}
 /* Tier chip di section header */
 .nav-header .nav-tier,
 .nav-label .nav-tier {

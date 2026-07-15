@@ -55,6 +55,46 @@ function generateNumber(string $prefix): string
 }
 
 /* -------------------------------------------------------------------------
+ * Subscription plan gating (modul & kuota user per customer)
+ * ---------------------------------------------------------------------- */
+function customerPlanInfo(int $customerId): array
+{
+    static $cache = [];
+    if (isset($cache[$customerId])) return $cache[$customerId];
+    $info = ['plan' => null, 'max_users' => -1, 'modules' => []];
+    try {
+        $stmt = Database::getConnection()->prepare(
+            "SELECT sp.name AS plan, sp.max_users, sp.allowed_modules,
+                    cc.max_users_override, cc.allowed_modules_override
+             FROM mova_customers c
+             JOIN mova_subscription_plans sp ON sp.id = c.subscription_plan_id
+             LEFT JOIN mova_customer_configs cc ON cc.customer_id = c.id
+             WHERE c.id = ? LIMIT 1"
+        );
+        $stmt->execute([$customerId]);
+        if ($r = $stmt->fetch()) {
+            $info['plan'] = $r['plan'];
+            $info['max_users'] = ($r['max_users_override'] !== null) ? (int)$r['max_users_override'] : (int)$r['max_users'];
+            $ov = $r['allowed_modules_override'] ?? null;
+            $mods = ($ov !== null && $ov !== '') ? json_decode($ov, true) : json_decode($r['allowed_modules'] ?? '[]', true);
+            $info['modules'] = is_array($mods) ? $mods : [];
+        }
+    } catch (\Throwable $e) { /* default */ }
+    return $cache[$customerId] = $info;
+}
+function planAllowedModules(int $customerId): array { return customerPlanInfo($customerId)['modules']; }
+function planMaxUsers(int $customerId): int { return customerPlanInfo($customerId)['max_users']; } // -1 = unlimited
+function customerPlanName(int $customerId): ?string { return customerPlanInfo($customerId)['plan']; }
+function customerActiveUsers(int $customerId): int
+{
+    try {
+        $s = Database::getConnection()->prepare("SELECT COUNT(*) FROM mova_users WHERE customer_id = ? AND is_active = 1");
+        $s->execute([$customerId]);
+        return (int)$s->fetchColumn();
+    } catch (\Throwable $e) { return 0; }
+}
+
+/* -------------------------------------------------------------------------
  * Hak akses modul Maintenance (RBAC)
  * ---------------------------------------------------------------------- */
 function maintenanceCanView(): bool

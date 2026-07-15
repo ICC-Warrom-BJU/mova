@@ -126,6 +126,7 @@ function renderCustomerLayout(string $title, string $content, array $data = []):
                 <?php
                 // Modul Premium & Enterprise (mode demo — belum dibangun, ditandai flag)
                 $catalog = function_exists('moduleCatalog') ? moduleCatalog() : [];
+                $navTenant = SessionMiddleware::getTenantContext();
                 $tierSections = ['premium' => 'Premium', 'enterprise' => 'Enterprise'];
                 foreach ($tierSections as $tierKey => $tierName):
                     $items = array_filter($catalog, fn($m) => $m['tier'] === $tierKey);
@@ -143,10 +144,15 @@ function renderCustomerLayout(string $title, string $content, array $data = []):
                 </a>
                 <div class="nav-collapse <?= $tierActive ? 'is-expanded' : '' ?>">
                     <?php foreach ($items as $m): ?>
-                    <a href="/customer/module/<?= e($m['key']) ?>" class="nav-item nav-sub-item is-locked <?= $active === $m['key'] ? 'active' : '' ?>" data-tooltip="<?= e($m['label']) ?>">
+                    <?php $inPlan = $navTenant->hasModule($m['key']); ?>
+                    <a href="/customer/module/<?= e($m['key']) ?>" class="nav-item nav-sub-item <?= $inPlan ? '' : 'is-locked' ?> <?= $active === $m['key'] ? 'active' : '' ?>" data-tooltip="<?= e($m['label']) ?><?= $inPlan ? '' : ' (perlu upgrade paket)' ?>">
                         <span class="nav-icon"><?= $m['icon'] ?></span>
                         <span class="nav-label"><?= e($m['label']) ?></span>
+                        <?php if ($inPlan): ?>
                         <span class="nav-flag">Dev</span>
+                        <?php else: ?>
+                        <span class="nav-flag nav-flag--lock" title="Perlu paket lebih tinggi"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+                        <?php endif; ?>
                     </a>
                     <?php endforeach; ?>
                 </div>

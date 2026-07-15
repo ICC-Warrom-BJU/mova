@@ -70,6 +70,24 @@ class TenantContext
         return $this->layer === 'company' && $this->role === 'super_admin';
     }
 
+    /**
+     * Apakah modul ($key) diizinkan oleh paket langganan customer ini?
+     * Company layer (BJU internal) selalu true. Customer: cek allowed_modules
+     * dari plan (atau override di customer_configs).
+     */
+    public function hasModule(string $key): bool
+    {
+        if ($this->layer === 'company') return true;
+        if ($this->customerId === null) return false;
+        return in_array($key, planAllowedModules($this->customerId), true);
+    }
+
+    /** Nama paket customer (free/premium/enterprise), null utk company. */
+    public function planName(): ?string
+    {
+        return $this->customerId !== null ? customerPlanName($this->customerId) : null;
+    }
+
     public function isManagement(): bool
     {
         return $this->layer === 'company' && $this->role === 'management';
