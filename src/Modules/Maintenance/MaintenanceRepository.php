@@ -51,17 +51,27 @@ class MaintenanceRepository extends BaseRepository
 
     public function createSchedule(array $data): int
     {
-        return $this->scopedInsert([
-            'customer_id' => $data['customer_id'],
-            'vehicle_id' => $data['vehicle_id'],
-            'service_type' => $data['service_type'],
-            'trigger_type' => $data['trigger_type'],
-            'km_threshold' => $data['km_threshold'] ?? null,
-            'scheduled_date' => $data['scheduled_date'] ?? null,
-            'reminder_days_before' => $data['reminder_days_before'] ?? 7,
-            'notes' => $data['notes'] ?? null,
-            'created_by' => $data['created_by'],
+        // Insert langsung (bukan scopedInsert) — customer_id sudah ditentukan
+        // controller (dari kendaraan). scopedInsert akan menimpanya jadi null
+        // untuk user company non-super (mis. Operation).
+        $stmt = $this->db->prepare(
+            "INSERT INTO mova_maintenance_schedules
+             (customer_id, vehicle_id, service_type, trigger_type, km_threshold,
+              scheduled_date, reminder_days_before, status, notes, created_by)
+             VALUES (?, ?, ?, ?, ?, ?, ?, 'scheduled', ?, ?)"
+        );
+        $stmt->execute([
+            $data['customer_id'],
+            $data['vehicle_id'],
+            $data['service_type'],
+            $data['trigger_type'],
+            $data['km_threshold'] ?? null,
+            $data['scheduled_date'] ?? null,
+            $data['reminder_days_before'] ?? 7,
+            $data['notes'] ?? null,
+            $data['created_by'],
         ]);
+        return (int) $this->db->lastInsertId();
     }
 
     public function updateScheduleStatus(int $id, string $status): int

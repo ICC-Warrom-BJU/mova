@@ -5,7 +5,7 @@ class MaintenanceController
     public function index(): void
     {
         AuthMiddleware::requireAuth();
-        AuthMiddleware::requireLayer('customer');
+        if (!maintenanceCanView()) { redirect('/customer/dashboard'); }
         $repo = new MaintenanceRepository();
         $schedules = $repo->findSchedulesWithRelations();
         $overdue = $repo->findOverdue();
@@ -20,7 +20,9 @@ class MaintenanceController
         <div class="card">
             <div class="card-header">
                 <h3>Maintenance Schedule</h3>
+                <?php if (maintenanceCanManage()): ?>
                 <a href="/customer/maintenance/create" class="btn btn-primary btn-sm">+ Buat Jadwal</a>
+                <?php endif; ?>
             </div>
             <div class="card-body">
                 <?php if (empty($schedules)): ?>
@@ -39,12 +41,14 @@ class MaintenanceController
                             <td><?= $s['trigger_type'] === 'km_based' ? number_format((int)$s['km_threshold']) . ' KM' : ($s['scheduled_date'] ?? '-') ?></td>
                             <td><span class="badge badge-<?= e($s['status']) ?>"><?= e($s['status']) ?></span></td>
                             <td>
+                                <?php if (maintenanceCanManage()): ?>
                                 <a href="/customer/maintenance/<?= $s['id'] ?>/edit" class="btn btn-outline btn-sm">Edit</a>
-                                <?php if ($s['status'] !== 'completed'): ?>
-                                <form method="post" action="/customer/maintenance/<?= $s['id'] ?>/log" style="display:inline">
-                                    <?= csrf_field() ?>
-                                    <button type="submit" class="btn btn-success btn-sm">Log Servis</button>
-                                </form>
+                                <?php endif; ?>
+                                <?php if ($s['status'] !== 'completed' && maintenanceCanClose()): ?>
+                                <a href="/customer/maintenance/<?= $s['id'] ?>/log" class="btn btn-success btn-sm">Log Servis</a>
+                                <?php endif; ?>
+                                <?php if (!maintenanceCanManage() && !maintenanceCanClose()): ?>
+                                <span style="color:var(--text-muted);font-size:0.8rem">Lihat saja</span>
                                 <?php endif; ?>
                             </td>
                         </tr>
@@ -63,24 +67,40 @@ class MaintenanceController
     public function create(): void
     {
         AuthMiddleware::requireAuth();
-        AuthMiddleware::requireLayer('customer');
+        if (!maintenanceCanManage()) { $_SESSION['_flash']['error'] = 'Anda tidak berwenang membuat/mengubah jadwal maintenance'; redirect('/customer/maintenance'); }
         $tenant = SessionMiddleware::getTenantContext();
         $customerId = $tenant->getCustomerId();
+        $isCompany = ($customerId === null); // super_admin / operation (tak punya customer_id sendiri)
 
         $db = Database::getConnection();
-        if ($tenant->isSuperAdmin()) {
-            $vehicles = $db->query("SELECT v.*, c.name as customer_name FROM mova_vehicles v LEFT JOIN mova_customers c ON c.id = v.customer_id WHERE v.is_active = 1 ORDER BY c.name, v.plate_number")->fetchAll();
+        if ($isCompany) {
+            if ($tenant->isSuperAdmin()) {
+                $vehicles = $db->query("SELECT v.*, c.name as customer_name FROM mova_vehicles v LEFT JOIN mova_customers c ON c.id = v.customer_id WHERE v.is_active = 1 ORDER BY c.name, v.plate_number")->fetchAll();
+            } else {
+                $acc = $tenant->getAccessibleCustomerIds();
+                if (empty($acc)) { $vehicles = []; }
+                else {
+                    $ph = implode(',', array_fill(0, count($acc), '?'));
+                    $vStmt = $db->prepare("SELECT v.*, c.name as customer_name FROM mova_vehicles v LEFT JOIN mova_customers c ON c.id = v.customer_id WHERE v.customer_id IN ($ph) AND v.is_active = 1 ORDER BY c.name, v.plate_number");
+                    $vStmt->execute($acc); $vehicles = $vStmt->fetchAll();
+                }
+            }
         } else {
-            $vehicles = $db->prepare("SELECT * FROM mova_vehicles WHERE customer_id = ? AND is_active = 1");
+            $vehicles = $db->prepare("SELECT * FROM mova_vehicles WHERE customer_id = ? AND is_active = 1 ORDER BY plate_number");
             $vehicles->execute([$customerId]); $vehicles = $vehicles->fetchAll();
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             AuthMiddleware::validateCsrf();
-            if ($tenant->isSuperAdmin()) {
+            if ($isCompany) {
                 $vStmt = $db->prepare("SELECT customer_id FROM mova_vehicles WHERE id = ?");
                 $vStmt->execute([$_POST['vehicle_id']]);
                 $customerId = $vStmt->fetchColumn();
+                // scope check: user company non-super hanya boleh customer di branch-nya
+                if (!$tenant->isSuperAdmin() && !in_array((int)$customerId, array_map('intval', $tenant->getAccessibleCustomerIds()), true)) {
+                    $_SESSION['_flash']['error'] = 'Kendaraan di luar scope akses Anda';
+                    redirect('/customer/maintenance');
+                }
             }
             $repo = new MaintenanceRepository();
             $repo->createSchedule([
@@ -167,13 +187,15 @@ class MaintenanceController
     public function logService(int $id): void
     {
         AuthMiddleware::requireAuth();
-        AuthMiddleware::requireLayer('customer');
+        if (!maintenanceCanClose()) { $_SESSION['_flash']['error'] = 'Anda tidak berwenang menutup aktivitas maintenance'; redirect('/customer/maintenance'); }
         $tenant = SessionMiddleware::getTenantContext();
-        $customerId = $tenant->getCustomerId();
         $repo = new MaintenanceRepository();
         $schedule = $repo->find($id);
 
         if (!$schedule) { $_SESSION['_flash']['error'] = 'Jadwal tidak ditemukan'; redirect('/customer/maintenance'); }
+
+        // Super admin tak punya customer_id sendiri → ambil dari jadwalnya.
+        $customerId = $tenant->getCustomerId() ?: ($schedule['customer_id'] ?? null);
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             AuthMiddleware::validateCsrf();
@@ -257,16 +279,24 @@ class MaintenanceController
     public function edit(int $id): void
     {
         AuthMiddleware::requireAuth();
-        AuthMiddleware::requireLayer('customer');
+        if (!maintenanceCanManage()) { $_SESSION['_flash']['error'] = 'Anda tidak berwenang mengubah jadwal maintenance'; redirect('/customer/maintenance'); }
         $tenant = SessionMiddleware::getTenantContext();
         $customerId = $tenant->getCustomerId();
+        $isCompany = ($customerId === null); // super_admin / operation
         $db = Database::getConnection();
 
-        if ($tenant->isSuperAdmin()) {
+        if ($isCompany && $tenant->isSuperAdmin()) {
             $schedule = $db->prepare("SELECT * FROM mova_maintenance_schedules WHERE id = ?");
             $schedule->execute([$id]); $schedule = $schedule->fetch();
-            if ($schedule) $customerId = $schedule['customer_id'];
             $vehicles = $db->query("SELECT v.*, c.name as customer_name FROM mova_vehicles v LEFT JOIN mova_customers c ON c.id = v.customer_id WHERE v.is_active = 1 ORDER BY c.name, v.plate_number")->fetchAll();
+        } elseif ($isCompany) {
+            // company non-super (operation): batasi ke customer di branch-nya
+            $acc = $tenant->getAccessibleCustomerIds();
+            $ph = !empty($acc) ? implode(',', array_fill(0, count($acc), '?')) : 'NULL';
+            $schedule = $db->prepare("SELECT * FROM mova_maintenance_schedules WHERE id = ? AND customer_id IN ($ph)");
+            $schedule->execute(array_merge([$id], $acc)); $schedule = $schedule->fetch();
+            $vst = $db->prepare("SELECT v.*, c.name as customer_name FROM mova_vehicles v LEFT JOIN mova_customers c ON c.id = v.customer_id WHERE v.customer_id IN ($ph) AND v.is_active = 1 ORDER BY c.name, v.plate_number");
+            $vst->execute($acc); $vehicles = $vst->fetchAll();
         } else {
             $schedule = $db->prepare("SELECT * FROM mova_maintenance_schedules WHERE id = ? AND customer_id = ?");
             $schedule->execute([$id, $customerId]); $schedule = $schedule->fetch();
@@ -274,6 +304,7 @@ class MaintenanceController
             $vehicles->execute([$customerId]); $vehicles = $vehicles->fetchAll();
         }
         if (!$schedule) { $_SESSION['_flash']['error'] = 'Data tidak ditemukan'; redirect('/customer/maintenance'); }
+        if ($isCompany) { $customerId = $schedule['customer_id']; } // untuk WHERE customer_id di UPDATE
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             AuthMiddleware::validateCsrf();

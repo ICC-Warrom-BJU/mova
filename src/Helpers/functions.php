@@ -54,6 +54,26 @@ function generateNumber(string $prefix): string
     return $prefix . '-' . date('Y') . '-' . str_pad(mt_rand(1, 9999), 4, '0', STR_PAD_LEFT);
 }
 
+/* -------------------------------------------------------------------------
+ * Hak akses modul Maintenance (RBAC)
+ * ---------------------------------------------------------------------- */
+function maintenanceCanView(): bool
+{
+    $t = SessionMiddleware::getTenantContext();
+    if ($t->getLayer() === 'customer' || $t->isSuperAdmin()) return true;
+    return in_array($t->getRole(), ['operation', 'management'], true); // company view-only
+}
+function maintenanceCanManage(): bool // buat & edit jadwal
+{
+    $t = SessionMiddleware::getTenantContext();
+    return $t->isSuperAdmin() || in_array($t->getRole(), ['koordinator', 'supervisor', 'driver', 'operation'], true);
+}
+function maintenanceCanClose(): bool // log servis / tutup aktivitas
+{
+    $t = SessionMiddleware::getTenantContext();
+    return $t->isSuperAdmin() || in_array($t->getRole(), ['koordinator', 'supervisor', 'driver', 'operation'], true);
+}
+
 /**
  * Ambil label tampilan untuk sebuah value config (termasuk yang nonaktif),
  * fallback ke value mentah bila tak ditemukan.
