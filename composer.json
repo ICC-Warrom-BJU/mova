@@ -11,6 +11,7 @@
         "ext-pdo_mysql": "*",
         "ext-mbstring": "*",
         "ext-gd": "*",
+        "ext-zip": "*",
         "phpoffice/phpspreadsheet": "^5.8"
     },
     "require-dev": {
