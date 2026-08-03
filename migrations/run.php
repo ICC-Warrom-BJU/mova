@@ -4,7 +4,7 @@
  * Usage: php migrations/run.php
  */
 
-require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/Database.php';
 
 $migrations = glob(__DIR__ . '/*.sql');
 sort($migrations);

@@ -4,7 +4,7 @@
  * Jalankan SETELAH migration: php migrations/seed.php
  */
 
-require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/Database.php';
 
 $db = Database::getConnection();
 

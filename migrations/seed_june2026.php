@@ -11,7 +11,7 @@
  * dashboard (grafik "Trip per bulan" mengelompokkan berdasarkan created_at).
  */
 
-require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/Database.php';
 
 $db = Database::getConnection();
 $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);

@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/Database.php';
 $db = Database::getConnection();
 echo "=== Seed Operational Data ===\n\n";
 
