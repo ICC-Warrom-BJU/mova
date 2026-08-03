@@ -70,7 +70,7 @@ class TripRepository extends BaseRepository
     {
         return $this->scopedInsert([
             'customer_id' => $data['customer_id'],
-            'vehicle_request_id' => $data['vehicle_request_id'] ?? null,
+            'vehicle_request_id' => !empty($data['vehicle_request_id']) ? (int)$data['vehicle_request_id'] : null,
             'vehicle_id' => $data['vehicle_id'],
             'driver_id' => $data['driver_id'],
             'trip_number' => $data['trip_number'],

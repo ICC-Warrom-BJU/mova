@@ -66,7 +66,7 @@ class UserRepository extends BaseRepository
 
         return $this->scopedInsert([
             'role_id' => $data['role_id'],
-            'customer_id' => $data['customer_id'] ?? null,
+            'customer_id' => !empty($data['customer_id']) ? (int)$data['customer_id'] : null,
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => $hashed,
